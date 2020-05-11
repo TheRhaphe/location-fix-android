@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
         distanceInMetres += location.distanceTo(lastLocation);
         editor.putFloat(KEY_DISTANCE,  distanceInMetres);
         editor.commit();
-        distanceLogsText.setText(distanceLogsText.getText()+"\n"+location.distanceTo(lastLocation)+"m");
+        distanceLogsText.setText(distanceLogsText.getText()+"\n"+location.distanceTo(lastLocation)+"m -> ("+location.getLatitude()+", "+location.getLongitude()+")");
         distanceText.setText(String.format(Locale.getDefault(), "%.3fm", sharedPreferences.getFloat(KEY_DISTANCE, 0)));
         lastLocation = location;
     }
