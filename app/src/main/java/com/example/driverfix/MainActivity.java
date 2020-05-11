@@ -23,10 +23,11 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
     private int LOCATION_PERMISSION_REQUEST_CODE = 989;
     private LocationManager locationManager;
     private Location lastLocation;
-    private float distanceInMetres;
+    //private float distanceInMetres;
     private TextView distanceText, distanceLogsText;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private final String KEY_DISTANCE = "distance";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,19 +45,20 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
 
         checkPermissions();
 
+        resetPrefs();
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
             //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         } else {
             Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
         }
 
         findViewById(R.id.button).setOnClickListener(v->{
-            editor.putFloat("distance", 0);
-            editor.commit();
+            resetPrefs();
             lastLocation = null;
             distanceText.setText("0m");
             distanceLogsText.setText("");
@@ -70,12 +72,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
         if (lastLocation == null) {
             lastLocation = location;
         }
-        distanceInMetres = sharedPreferences.getFloat("distance", 0);
+        float distanceInMetres = sharedPreferences.getFloat(KEY_DISTANCE, 0);
         distanceInMetres += location.distanceTo(lastLocation);
-        editor.putFloat("distance", distanceInMetres);
+        editor.putFloat(KEY_DISTANCE,  distanceInMetres);
         editor.commit();
         distanceLogsText.setText(distanceLogsText.getText()+"\n"+location.distanceTo(lastLocation)+"m");
-        distanceText.setText(String.format(Locale.getDefault(), "%.3fm", sharedPreferences.getFloat("distance", 0)));
+        distanceText.setText(String.format(Locale.getDefault(), "%.3fm", sharedPreferences.getFloat(KEY_DISTANCE, 0)));
         lastLocation = location;
     }
 
@@ -87,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
+    }
+
+    private void resetPrefs() {
+        editor.putFloat(KEY_DISTANCE, 0);
+        editor.commit();
     }
 
     @Override
