@@ -2,6 +2,7 @@ package com.example.driverfix;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,8 +23,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
     private int LOCATION_PERMISSION_REQUEST_CODE = 989;
     private LocationManager locationManager;
     private Location lastLocation;
-    private double distanceInMetres;
+    private float distanceInMetres;
     private TextView distanceText, distanceLogsText;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
 
         distanceText = findViewById(R.id.textView);
         distanceLogsText = findViewById(R.id.textView2);
+        sharedPreferences = getSharedPreferences("distance_logs", 0);
+        editor = sharedPreferences.edit();
 
         checkPermissions();
 
@@ -50,7 +55,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
         }
 
         findViewById(R.id.button).setOnClickListener(v->{
-            distanceInMetres = 0;
+            editor.putFloat("distance", 0);
+            editor.commit();
             lastLocation = null;
             distanceText.setText("0m");
             distanceLogsText.setText("");
@@ -64,9 +70,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource.On
         if (lastLocation == null) {
             lastLocation = location;
         }
+        distanceInMetres = sharedPreferences.getFloat("distance", 0);
         distanceInMetres += location.distanceTo(lastLocation);
+        editor.putFloat("distance", distanceInMetres);
+        editor.commit();
         distanceLogsText.setText(distanceLogsText.getText()+"\n"+location.distanceTo(lastLocation)+"m");
-        distanceText.setText(String.format(Locale.getDefault(), "%.3fm", distanceInMetres));
+        distanceText.setText(String.format(Locale.getDefault(), "%.3fm", sharedPreferences.getFloat("distance", 0)));
         lastLocation = location;
     }
 
